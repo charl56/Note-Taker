@@ -11,29 +11,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.eseo.ld.android.cp.notes.R
 import fr.eseo.ld.android.cp.notes.ui.theme.NoteTakerTheme
-import androidx.compose.foundation.background
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
-import fr.eseo.ld.android.cp.notes.ui.theme.AzurPalette
+import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
+import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
 import java.util.Date
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")        // Pour éviter l'erreur de paramètre inutilisé
 @Composable
-fun NotesSummaryAppBar(modifier: Modifier){
+fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel){
+
+    val notes by viewModel.notes.collectAsState()
+
     Surface(
         modifier = Modifier
             .statusBarsPadding()
@@ -41,64 +44,56 @@ fun NotesSummaryAppBar(modifier: Modifier){
     ){
         val dummyNotes= listOf(
             Note(
-                id="1",
-                title="My first note",
+                id ="1",
+                title ="My first note",
                 body = "Not very interesting",
                 author = "Bob",
                 creationDate = Date(),
                 modificationDate = Date()
             ),
             Note(
-                id="2",
-                title="My second note",
+                id ="2",
+                title ="My second note",
                 body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
                 author = "Bob",
                 creationDate = Date(),
                 modificationDate = Date()
             ),
             Note(
-                id="3",
-                title="My second note",
+                id ="3",
+                title ="My second note",
                 body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
                 author = "Bob",
                 creationDate = Date(),
                 modificationDate = Date()
             ),
             Note(
-                id="4",
-                title="My second note",
+                id ="4",
+                title ="My Biggest note",
+                body = "Not very interesting\n\but\n a lot longer\nthan other notes\nfrdr\nfrfrf\nfrfrf\nnnfrfr.",
+                author = "Bob",
+                creationDate = Date(),
+                modificationDate = Date()
+            ),
+            Note(
+                id ="5",
+                title ="My second note",
                 body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
                 author = "Bob",
                 creationDate = Date(),
                 modificationDate = Date()
             ),
             Note(
-                id="5",
-                title="My second note",
+                id ="6",
+                title ="My second note",
                 body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
                 author = "Bob",
                 creationDate = Date(),
                 modificationDate = Date()
             ),
             Note(
-                id="6",
-                title="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id="7",
-                title="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id="8",
-                title="My second note",
+                id ="7",
+                title ="My second note",
                 body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
                 author = "Bob",
                 creationDate = Date(),
@@ -124,13 +119,21 @@ fun NotesSummaryAppBar(modifier: Modifier){
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = {}) {
+                FloatingActionButton(onClick = {
+                    navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/NEW")
+                }) {
                     Icon(imageVector = Icons.Default.Add,
                         contentDescription = R.string.add_note.toString()
                     )
                 }
             },
-            content = {innerPadding ->SummaryList(notes = dummyNotes ,modifier = Modifier.padding(innerPadding))}
+            content = {innerPadding ->SummaryList(
+                notes = dummyNotes,
+                modifier = Modifier.padding(innerPadding),
+                onClick = {navController.navigate(
+                    NoteTakerScreens.DETAILS_SCREEN.id+"/${it}"
+                )})
+            }
         )
     }
 }
@@ -154,10 +157,11 @@ private fun SimpleComposeAppBar(modifier : Modifier = Modifier){
 
 
 @Composable
-private fun SummaryItem(note : Note, modifier: Modifier ){
+private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
     Card(
+        onClick = {onClick(note.id)},
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardColors(
+        colors = CardDefaults.cardColors(
             contentColor = Color.Black,
             containerColor = Color.White,
             disabledContentColor = Color.Blue,
@@ -176,30 +180,32 @@ private fun SummaryItem(note : Note, modifier: Modifier ){
             text = note.body,
             fontSize = MaterialTheme.typography.bodySmall.fontSize,
             fontWeight = FontWeight.Normal,
-            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
+                .heightIn(max = 100.dp)
+                .verticalScroll(rememberScrollState())
         )
     }
 }
 
 
 @Composable
-fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier)
+fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit)
 {
+
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         modifier = modifier.padding(8.dp).fillMaxHeight(1f),
         verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(bottom = 40.dp)
     ){
         items(notes){
                 note ->
-            SummaryItem(note, modifier = modifier)
+            SummaryItem(note, onClick = {onClick(it)})
         }
     }
-
 }
 
 
@@ -209,41 +215,5 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier)
 )
 @Composable
 fun PreviewNotesSummaryScreen(){
-    NoteTakerTheme {
-        Scaffold(
-            topBar = {
-                NotesSummaryAppBar(
-                    modifier = Modifier
-                    .fillMaxWidth()
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(onClick = {}) {
-                    Icon(imageVector = Icons.Default.Add,
-                        contentDescription = "Add Notes")
-                }
-            }
-        ){
-                innerPadding ->
-            val dummyNotes= listOf(
-                Note(
-                    id="1",
-                    title="My first note",
-                    body = "Not very interesting",
-                    author = "Bob",
-                    creationDate = Date(),
-                    modificationDate = Date()
-                ),
-                Note(
-                    id="2",
-                    title="My second note",
-                    body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                    author = "Bob",
-                    creationDate = Date(),
-                    modificationDate = Date()
-                ),
-            )
-            SummaryList(notes = dummyNotes, modifier = Modifier.padding(innerPadding))
-        }
-    }
+    NoteTakerTheme{}
 }

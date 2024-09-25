@@ -5,12 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import fr.eseo.ld.android.cp.filmposter.ui.view.NotesSummaryAppBar
+import fr.eseo.ld.android.cp.filmposter.ui.view.SummaryScreen
+import fr.eseo.ld.android.cp.notes.ui.NoteTakerApp
 import fr.eseo.ld.android.cp.notes.ui.theme.NoteTakerTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,9 +22,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NoteTakerTheme {
-                NotesSummaryAppBar(
-                    modifier = Modifier.fillMaxSize()
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                ) {
+                    NoteTakerApp()
+                }
             }
         }
     }
@@ -33,8 +40,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     NoteTakerTheme{
-        NotesSummaryAppBar(
-            modifier = Modifier.fillMaxSize(),
-        )
+        NoteTakerApp()
     }
 }
