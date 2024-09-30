@@ -1,5 +1,5 @@
 // HeaderScreen.kt
-package fr.eseo.ld.android.cp.filmposter.ui.view
+package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -24,11 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
-import java.util.Date
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")        // Pour éviter l'erreur de paramètre inutilisé
@@ -42,65 +40,6 @@ fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel)
             .statusBarsPadding()
             .fillMaxSize()
     ){
-        val dummyNotes= listOf(
-            Note(
-                id ="1",
-                title ="My first note",
-                body = "Not very interesting",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="2",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="3",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="4",
-                title ="My Biggest note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes\nfrdr\nfrfrf\nfrfrf\nnnfrfr.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="5",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="6",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="7",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-        )
-
         Scaffold(
             topBar = {
                 val layoutDirection = LocalLayoutDirection.current
@@ -127,8 +66,9 @@ fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel)
                     )
                 }
             },
-            content = {innerPadding ->SummaryList(
-                notes = dummyNotes,
+            content = {innerPadding ->
+                SummaryList(
+                notes = notes,
                 modifier = Modifier.padding(innerPadding),
                 onClick = {navController.navigate(
                     NoteTakerScreens.DETAILS_SCREEN.id+"/${it}"

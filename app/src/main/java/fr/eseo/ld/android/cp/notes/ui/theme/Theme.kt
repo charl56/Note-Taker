@@ -1,6 +1,5 @@
 package fr.eseo.ld.android.cp.notes.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -16,20 +15,23 @@ private val DarkColorScheme = darkColorScheme(
     primary = AzurPalette,
     primaryContainer = AzurPalette,
     secondary = GrayPalette,
+    secondaryContainer = Color.White,
     tertiary = Pink80,
     background = AzurPalette,
     onBackground = Color.Black,
-    surfaceContainer = AzurPalette
+    surfaceContainer = Color.White,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = AzurPalette,
     primaryContainer = AzurPalette,
     secondary = GrayPalette,
+    secondaryContainer = Color.White,
     tertiary = Pink40,
     background = AzurPalette,
     onBackground = Color.Black,
-    surfaceContainer = AzurPalette
+    surfaceContainer = Color.White,
+    onSurface = Color.White
 
 
     /* Other default colors to override
