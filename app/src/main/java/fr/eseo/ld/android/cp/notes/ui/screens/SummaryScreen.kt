@@ -22,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
@@ -38,6 +37,7 @@ fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel)
     Surface(
         modifier = Modifier
             .statusBarsPadding()
+            .navigationBarsPadding()
             .fillMaxSize()
     ){
         Scaffold(
@@ -60,9 +60,12 @@ fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel)
             floatingActionButton = {
                 FloatingActionButton(onClick = {
                     navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/NEW")
-                }) {
+                },
+                   containerColor = MaterialTheme.colorScheme.primary,
+                ) {
                     Icon(imageVector = Icons.Default.Add,
-                        contentDescription = R.string.add_note.toString()
+                        contentDescription = R.string.add_note.toString(),
+                        tint = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
             },
@@ -87,10 +90,11 @@ private fun SimpleComposeAppBar(modifier : Modifier = Modifier){
         verticalAlignment = Alignment.CenterVertically,
     ){
         Text(
-            text=stringResource(id= R.string.app_name),
+            text = stringResource(id= R.string.app_name),
             modifier = Modifier.padding(start=16.dp, top = 8.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
+
         )
     }
 }
@@ -118,8 +122,7 @@ private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = note.body,
-            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-            fontWeight = FontWeight.Normal,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
@@ -155,5 +158,7 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (S
 )
 @Composable
 fun PreviewNotesSummaryScreen(){
-    NoteTakerTheme{}
+    NoteTakerTheme{
+
+    }
 }

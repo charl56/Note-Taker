@@ -22,6 +22,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import fr.eseo.ld.android.cp.notes.model.Note
@@ -66,7 +69,10 @@ fun DetailsScreen(
             topBar = {
                 TopAppBar (
                     title = {
-                        Text(text = stringResource(id = R.string.app_name))
+                        Text(
+                            text = stringResource(id = R.string.app_name),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = {navController.popBackStack()}){
