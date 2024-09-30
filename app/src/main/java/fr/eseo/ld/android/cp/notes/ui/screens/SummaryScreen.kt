@@ -2,6 +2,7 @@
 package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,7 +23,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
@@ -108,8 +112,6 @@ private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
         colors = CardDefaults.cardColors(
             contentColor = Color.Black,
             containerColor = Color.White,
-            disabledContentColor = Color.Blue,
-            disabledContainerColor = Color.Yellow,
         ),
     ){
         Text(
@@ -136,7 +138,6 @@ private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
 @Composable
 fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit)
 {
-
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         modifier = modifier.padding(8.dp).fillMaxHeight(1f),
@@ -159,6 +160,8 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (S
 @Composable
 fun PreviewNotesSummaryScreen(){
     NoteTakerTheme{
-
+        val viewModel: NoteTakerViewModel = viewModel()
+        val navController: NavHostController = rememberNavController()
+        SummaryScreen(navController, viewModel)
     }
 }

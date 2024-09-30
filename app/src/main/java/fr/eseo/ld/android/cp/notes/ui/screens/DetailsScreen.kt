@@ -24,9 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
 import java.text.SimpleDateFormat
@@ -62,6 +65,7 @@ fun DetailsScreen(
     Surface(
         modifier = Modifier
             .statusBarsPadding()
+            .navigationBarsPadding()
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ){
@@ -101,7 +105,7 @@ fun DetailsScreen(
                                 )
                             }
                         }
-                    }
+                    },
                 )
             },
             content = {innerPadding -> DetailsContent(
@@ -111,7 +115,7 @@ fun DetailsScreen(
                 body = body,
                 onTitleChange = { title = it },
                 onBodyChange = { body = it }
-                ) }
+                ) },
         )
     }
 }
@@ -209,4 +213,18 @@ private fun DetailsContent(
 @SuppressLint("SimpleDateFormat")
 private fun formatDate(date : Date) : String {
     return SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(date)
+}
+
+
+
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun DetailsScreenPreview() {
+    val viewModel: NoteTakerViewModel = viewModel()
+    val navController: NavHostController = rememberNavController()
+    DetailsScreen(navController, 1.toString(), viewModel)
 }
