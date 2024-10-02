@@ -1,6 +1,7 @@
 package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,23 +16,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
+import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -42,12 +39,18 @@ import java.util.Date
 fun DetailsScreen(
     navController : NavController,
     noteId : String,
-    viewModel : NoteTakerViewModel = viewModel()
+    application: Application
 ) {
+
+    val viewModel = viewModel<NoteTakerViewModel>(factory = NoteTakerViewModelFactory(application))
+    var isNoteLoaded by remember { mutableStateOf(false) }
 
     // Add the following lines, which will ensure that the existingNote instance is correctly initialized when the composable is (re)launched:
     LaunchedEffect(noteId){
-        viewModel.getNoteById(noteId)
+        if (!isNoteLoaded) {
+            viewModel.getNoteById(noteId)
+            isNoteLoaded = true
+        }
     }
 
     val existingNote by viewModel.note.collectAsState()
@@ -57,10 +60,13 @@ fun DetailsScreen(
     val author = "Bob"
     val date = Date()
 
-    SideEffect {
-        title = existingNote?.title ?: ""
-        body = existingNote?.body ?: ""
+    LaunchedEffect(existingNote) {
+        existingNote?.let{
+            title = it.title
+            body = it.body
+        }
     }
+
 
     Surface(
         modifier = Modifier
@@ -90,7 +96,7 @@ fun DetailsScreen(
                             IconButton(onClick = {
                                 val newNote = Note(
                                     creationDate = existingNote?.creationDate ?: date,
-                                    id = existingNote?.id ?: System.currentTimeMillis().toString(),
+                                    id = existingNote?.id ?: "",
                                     title = title,
                                     body = body,
                                     author = author,
@@ -115,7 +121,8 @@ fun DetailsScreen(
                 body = body,
                 onTitleChange = { title = it },
                 onBodyChange = { body = it }
-                ) },
+                )
+          },
         )
     }
 }
@@ -146,7 +153,9 @@ private fun DetailsContent(
             ),
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(8.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
             ) {
                 TextField(
                     value = title,
@@ -170,7 +179,9 @@ private fun DetailsContent(
                     singleLine = false,
                     textStyle = MaterialTheme.typography.bodyMedium,
                     onValueChange = onBodyChange,
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     label = { Text(text = "Body") },
                     readOnly = !(existingNote == null || existingNote.author == "Bob"),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -224,7 +235,5 @@ private fun formatDate(date : Date) : String {
 )
 @Composable
 fun DetailsScreenPreview() {
-    val viewModel: NoteTakerViewModel = viewModel()
-    val navController: NavHostController = rememberNavController()
-    DetailsScreen(navController, 1.toString(), viewModel)
+    DetailsScreen(rememberNavController(), 1.toString(), Application())
 }

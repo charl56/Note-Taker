@@ -1,13 +1,19 @@
 package fr.eseo.ld.android.cp.notes.viewmodels
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import fr.eseo.ld.android.cp.notes.model.Note
+import fr.eseo.ld.android.cp.notes.model.data.NoteTakerDatabaseProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.Date
+import kotlinx.coroutines.launch
 
-class NoteTakerViewModel : ViewModel() {
+class NoteTakerViewModel(application : Application) : AndroidViewModel(application) {
 
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     val notes : StateFlow<List<Note>> = _notes.asStateFlow()
@@ -15,83 +21,54 @@ class NoteTakerViewModel : ViewModel() {
     private val _note = MutableStateFlow<Note?>(null)
     val note : StateFlow<Note?> = _note.asStateFlow()
 
+    private val db = NoteTakerDatabaseProvider.getDatabase(application)
 
     init {
-        initializeDummyNotes()
+        viewModelScope.launch(Dispatchers.IO){
+            _notes.value = db.noteDao().getAllNotes()
+        }
     }
 
-    private fun initializeDummyNotes() {
-        val dummyNotes= listOf(
-            Note(
-                id ="1",
-                title ="My first note",
-                body = "Not very interesting",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="2",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="3",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="4",
-                title ="My Biggest note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes\nfrdr\nfrfrf\nfrfrf\nnnfrfr.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="5",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="6",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            ),
-            Note(
-                id ="7",
-                title ="My second note",
-                body = "Not very interesting\n\but\n a lot longer\nthan other notes.",
-                author = "Bob",
-                creationDate = Date(),
-                modificationDate = Date()
-            )
-        )
-        _notes.value = dummyNotes
-    }
 
     fun addOrUpdate(note: Note) {
-        _notes.value = if (_notes.value.any { it.id == note.id }) {
-            _notes.value.map { if (it.id == note.id) note else it }
-        } else {
-            _notes.value + note
+        viewModelScope.launch(Dispatchers.IO) {
+            if(note.id.isBlank()) {
+                db.noteDao().insert(note.copy(id=System.currentTimeMillis().toString()))
+            } else {
+                db.noteDao().update(note)
+            }
         }
     }
 
 
     fun getNoteById(noteId : String) {
-        _note.value = _notes.value.find {it.id == noteId}
+        viewModelScope.launch(Dispatchers.IO) {
+            _note.value = db.noteDao().getNoteById(noteId)
+        }
+    }
+
+    fun loadNotes() {
+//        withContext(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _notes.value = db.noteDao().getAllNotes()
+        }
+    }
+
+    fun deleteNote(noteId : String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            db.noteDao().deleteNoteById(noteId)
+            _notes.value = db.noteDao().getAllNotes()
+        }
+    }
+}
+
+
+class NoteTakerViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if(modelClass.isAssignableFrom(NoteTakerViewModel::class.java)){
+            return NoteTakerViewModel(application) as T
+        }
+        throw IllegalArgumentException("Not correct VM")
     }
 }

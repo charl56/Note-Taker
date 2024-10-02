@@ -1,5 +1,6 @@
 package fr.eseo.ld.android.cp.notes
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background),
                 ) {
-                    NoteTakerApp()
+                    NoteTakerApp(application)
                 }
             }
         }
@@ -44,7 +45,7 @@ fun MainPreview() {
                 .fillMaxSize()
                 .navigationBarsPadding()
         ) {
-            NoteTakerApp()
+            NoteTakerApp(Application())
         }
     }
 }

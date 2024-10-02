@@ -2,7 +2,9 @@
 package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
+import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,24 +21,50 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
+import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")        // Pour éviter l'erreur de paramètre inutilisé
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")        // Pour éviter l'erreur de paramètre inutilisé
 @Composable
-fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel){
+fun SummaryScreen(navController : NavController, application: Application){
 
-    val notes by viewModel.notes.collectAsState()
+    val viewModel = NoteTakerViewModelFactory(application)
+        .create(NoteTakerViewModel::class.java)
+
+    var noteToDelete by remember { mutableStateOf<Note?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadNotes()
+    }
+
+    if(noteToDelete != null) {
+        ConfirmDeleteDialog(note = noteToDelete!!,
+            onConfirm = {
+                viewModel.deleteNote(noteToDelete!!.id)
+                noteToDelete = null
+            },
+            onDismiss = {
+                noteToDelete = null
+            }
+        )
+    }
+
+
+            val notes by viewModel.notes.collectAsState()
 
     Surface(
         modifier = Modifier
@@ -75,14 +103,39 @@ fun SummaryScreen(navController : NavController, viewModel : NoteTakerViewModel)
             },
             content = {innerPadding ->
                 SummaryList(
-                notes = notes,
-                modifier = Modifier.padding(innerPadding),
-                onClick = {navController.navigate(
-                    NoteTakerScreens.DETAILS_SCREEN.id+"/${it}"
-                )})
+                    notes = notes,
+                    modifier = Modifier.padding(innerPadding),
+                    onClick = {navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/${it}") },
+                    onLongClick = {it ->noteToDelete = notes.find{note -> note.id == it} }
+                )
             }
         )
     }
+}
+
+@Composable
+fun ConfirmDeleteDialog(note: Note, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Delete Note")
+        },
+        text = {
+            Text(text = "Are you sure you wish to delete ${note.title}")
+        },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text(text = "Yes")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "No")
+            }
+        }
+    )
+
 }
 
 
@@ -104,10 +157,14 @@ private fun SimpleComposeAppBar(modifier : Modifier = Modifier){
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
+private fun SummaryItem(note : Note,  onClick : (String) -> Unit, onLongClick : (String) -> Unit){
     Card(
-        onClick = {onClick(note.id)},
+        modifier = Modifier.combinedClickable (
+            onClick = {onClick(note.id)},
+            onLongClick = {onLongClick(note.id)}
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             contentColor = Color.Black,
@@ -136,7 +193,7 @@ private fun SummaryItem(note : Note,  onClick : (String) -> Unit){
 
 
 @Composable
-fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit)
+fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit, onLongClick : (String) -> Unit)
 {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
@@ -147,7 +204,7 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (S
     ){
         items(notes){
                 note ->
-            SummaryItem(note, onClick = {onClick(it)})
+            SummaryItem(note, onClick = {onClick(it)}, onLongClick = {onLongClick(it)})
         }
     }
 }
@@ -160,8 +217,8 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (S
 @Composable
 fun PreviewNotesSummaryScreen(){
     NoteTakerTheme{
-        val viewModel: NoteTakerViewModel = viewModel()
+        val application = Application()
         val navController: NavHostController = rememberNavController()
-        SummaryScreen(navController, viewModel)
+        SummaryScreen(navController, application)
     }
 }
