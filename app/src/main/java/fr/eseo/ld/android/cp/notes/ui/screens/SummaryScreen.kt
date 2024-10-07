@@ -3,6 +3,7 @@ package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -10,10 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.eseo.ld.android.cp.notes.R
-import fr.eseo.ld.android.cp.notes.ui.theme.NoteTakerTheme
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -24,31 +23,43 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
+import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
+import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")        // Pour éviter l'erreur de paramètre inutilisé
 @Composable
-fun SummaryScreen(navController : NavController, application: Application){
+fun SummaryScreen(
+    navController : NavController,
+    application: Application,
+    repository: FirestoreRepository,
+    authenticationViewModel: AuthenticationViewModel
+) {
 
-    val viewModel = NoteTakerViewModelFactory(application)
-        .create(NoteTakerViewModel::class.java)
+    val user by authenticationViewModel.user.observeAsState()
+    var userConnected by remember{mutableStateOf(false)}
 
+    LaunchedEffect(user) {
+        userConnected = user?.isAnonymous?.not() ?: false
+    }
+
+
+    val viewModel = NoteTakerViewModelFactory(application, repository).create(NoteTakerViewModel::class.java)
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
 
     LaunchedEffect(Unit) {
-        viewModel.loadNotes()
+        viewModel.getNotes()
     }
 
     if(noteToDelete != null) {
@@ -63,8 +74,7 @@ fun SummaryScreen(navController : NavController, application: Application){
         )
     }
 
-
-            val notes by viewModel.notes.collectAsState()
+    val notes by viewModel.notes.collectAsState()
 
     Surface(
         modifier = Modifier
@@ -74,24 +84,36 @@ fun SummaryScreen(navController : NavController, application: Application){
     ){
         Scaffold(
             topBar = {
-                val layoutDirection = LocalLayoutDirection.current
-
-                SimpleComposeAppBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start= WindowInsets.safeDrawing
-                                .asPaddingValues()
-                                .calculateStartPadding(layoutDirection),
-                            end = WindowInsets.safeDrawing
-                                .asPaddingValues()
-                                .calculateEndPadding(layoutDirection)
-                        )
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(id = R.string.app_name))
+                    },
+                    actions = {
+                        if(userConnected) {
+                            Button(
+                                onClick = {authenticationViewModel.logout()}
+                            ){
+                                Text(text="Log out")
+                            }
+                        } else {
+                            Button(
+                                onClick = {navController
+                                    .navigate(NoteTakerScreens.CONNECTION_SCREEN.id)}
+                            ){
+                                Text(text="Connect")
+                            }
+                        }
+                    }
                 )
             },
             floatingActionButton = {
                 FloatingActionButton(onClick = {
-                    navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/NEW")
+                    if(userConnected) {
+                        navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/NEW")
+                    } else {
+                        val toast = Toast.makeText(application, "You need to be login", Toast.LENGTH_SHORT)
+                        toast.show()
+                    }
                 },
                    containerColor = MaterialTheme.colorScheme.primary,
                 ) {
@@ -206,19 +228,5 @@ fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (S
                 note ->
             SummaryItem(note, onClick = {onClick(it)}, onLongClick = {onLongClick(it)})
         }
-    }
-}
-
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
-@Composable
-fun PreviewNotesSummaryScreen(){
-    NoteTakerTheme{
-        val application = Application()
-        val navController: NavHostController = rememberNavController()
-        SummaryScreen(navController, application)
     }
 }

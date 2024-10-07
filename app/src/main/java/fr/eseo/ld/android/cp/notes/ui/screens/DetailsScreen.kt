@@ -27,6 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import fr.eseo.ld.android.cp.notes.model.Note
+import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
+import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 import java.text.SimpleDateFormat
@@ -39,33 +41,42 @@ import java.util.Date
 fun DetailsScreen(
     navController : NavController,
     noteId : String,
-    application: Application
+    application: Application,
+    repository: FirestoreRepository,
+    authenticationViewModel: AuthenticationViewModel
 ) {
 
-    val viewModel = viewModel<NoteTakerViewModel>(factory = NoteTakerViewModelFactory(application))
-    var isNoteLoaded by remember { mutableStateOf(false) }
-
-    // Add the following lines, which will ensure that the existingNote instance is correctly initialized when the composable is (re)launched:
-    LaunchedEffect(noteId){
-        if (!isNoteLoaded) {
-            viewModel.getNoteById(noteId)
-            isNoteLoaded = true
-        }
-    }
+    val viewModel = viewModel<NoteTakerViewModel>(factory = NoteTakerViewModelFactory(application, repository))
 
     val existingNote by viewModel.note.collectAsState()
-
+    var id by remember {mutableStateOf(existingNote?.id)}
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }
-    val author = "Bob"
+    var author by remember {mutableStateOf(existingNote?.author ?: "")}
     val date = Date()
+    var editable by remember { mutableStateOf(true) }
 
-    LaunchedEffect(existingNote) {
-        existingNote?.let{
-            title = it.title
-            body = it.body
+    LaunchedEffect(noteId, existingNote) {
+        if(noteId == "NEW") {
+            id = null
+            title = ""
+            body = ""
+            author = authenticationViewModel.user.value?.email ?: author
+            editable = true
+        } else {
+            viewModel.getNoteById(noteId)
+            existingNote?.let{
+                note ->
+                    id = note.id
+                    title = note.title
+                    body = note.body
+                    author = note.author
+                    editable = note.author == authenticationViewModel.user.value?.email
+            }
         }
     }
+
+
 
 
     Surface(
@@ -92,7 +103,7 @@ fun DetailsScreen(
                         }
                     },
                     actions = {
-                        if(existingNote==null || existingNote!!.author == "Bob") {
+                        if(existingNote==null || existingNote!!.author == author) {
                             IconButton(onClick = {
                                 val newNote = Note(
                                     creationDate = existingNote?.creationDate ?: date,
@@ -102,6 +113,8 @@ fun DetailsScreen(
                                     author = author,
                                     modificationDate = date
                                 )
+                                println("Adding or updating note $newNote")
+
                                 viewModel.addOrUpdate(newNote)
                                 navController.navigateUp()
                             }) {
@@ -119,6 +132,7 @@ fun DetailsScreen(
                 innerPadding = innerPadding,
                 title = title,
                 body = body,
+                editable = editable,
                 onTitleChange = { title = it },
                 onBodyChange = { body = it }
                 )
@@ -133,6 +147,7 @@ private fun DetailsContent(
     innerPadding: PaddingValues,
     title: String,
     body: String,
+    editable: Boolean,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit
 ) {
@@ -164,7 +179,7 @@ private fun DetailsContent(
                     onValueChange = onTitleChange,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Title") },
-                    readOnly = !(existingNote == null || existingNote.author == "Bob"),
+                    readOnly = !editable ,
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
                         unfocusedLabelColor = Color.Black,
@@ -183,7 +198,7 @@ private fun DetailsContent(
                         .fillMaxWidth()
                         .weight(1f),
                     label = { Text(text = "Body") },
-                    readOnly = !(existingNote == null || existingNote.author == "Bob"),
+                    readOnly = !editable,
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedContainerColor = Color.Transparent,
                         unfocusedLabelColor = Color.Black,
@@ -224,16 +239,4 @@ private fun DetailsContent(
 @SuppressLint("SimpleDateFormat")
 private fun formatDate(date : Date) : String {
     return SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(date)
-}
-
-
-
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
-@Composable
-fun DetailsScreenPreview() {
-    DetailsScreen(rememberNavController(), 1.toString(), Application())
 }
