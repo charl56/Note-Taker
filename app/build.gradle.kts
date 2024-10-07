@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.firebase.perf)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.dagger.hilt.android)
-
 }
 
 android {

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,7 +31,6 @@ import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
-import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -41,27 +41,28 @@ import java.util.Date
 fun DetailsScreen(
     navController : NavController,
     noteId : String,
-    application: Application,
-    repository: FirestoreRepository,
+    viewModel: NoteTakerViewModel = viewModel(),
     authenticationViewModel: AuthenticationViewModel
 ) {
 
-    val viewModel = viewModel<NoteTakerViewModel>(factory = NoteTakerViewModelFactory(application, repository))
+
 
     val existingNote by viewModel.note.collectAsState()
     var id by remember {mutableStateOf(existingNote?.id)}
-    var title by remember { mutableStateOf("") }
-    var body by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf(existingNote?.title ?: "") }
+    var body by remember { mutableStateOf(existingNote?.body ?: "") }
     var author by remember {mutableStateOf(existingNote?.author ?: "")}
     val date = Date()
     var editable by remember { mutableStateOf(true) }
 
     LaunchedEffect(noteId, existingNote) {
+        //userConnected = user?.isAnonymous?.not() ?: false
+
         if(noteId == "NEW") {
             id = null
             title = ""
             body = ""
-            author = authenticationViewModel.user.value?.email ?: author
+            author = authenticationViewModel.user.value?.email ?: ""
             editable = true
         } else {
             viewModel.getNoteById(noteId)
@@ -103,7 +104,7 @@ fun DetailsScreen(
                         }
                     },
                     actions = {
-                        if(existingNote==null || existingNote!!.author == author) {
+                        if((existingNote==null || existingNote?.author == author) && editable) {
                             IconButton(onClick = {
                                 val newNote = Note(
                                     creationDate = existingNote?.creationDate ?: date,
@@ -113,8 +114,6 @@ fun DetailsScreen(
                                     author = author,
                                     modificationDate = date
                                 )
-                                println("Adding or updating note $newNote")
-
                                 viewModel.addOrUpdate(newNote)
                                 navController.navigateUp()
                             }) {

@@ -16,14 +16,16 @@ import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.ui.screens.ConnectionScreen
 import fr.eseo.ld.android.cp.notes.ui.screens.DetailsScreen
 import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
+import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
 
 
 @Composable
-fun NoteTakerApp(application : Application, repository: FirestoreRepository) {
+fun NoteTakerApp() {
     val navController: NavHostController = rememberNavController()
+    val viewModel : NoteTakerViewModel = hiltViewModel()
     val authenticationViewModel : AuthenticationViewModel = hiltViewModel()
 
-    NavHost(navController = navController, startDestination = "start") {
+    NavHost(navController , startDestination = "start") {
 
         composable("start") {
             val user by authenticationViewModel.user.observeAsState()
@@ -38,11 +40,11 @@ fun NoteTakerApp(application : Application, repository: FirestoreRepository) {
             }
         }
         composable(NoteTakerScreens.SUMMARY_SCREEN.id) {
-            SummaryScreen(navController, application, repository, authenticationViewModel)
+            SummaryScreen(navController, viewModel, authenticationViewModel)
         }
         composable(NoteTakerScreens.DETAILS_SCREEN.id + "/{noteId}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("noteId") ?: "NEW"
-            DetailsScreen(navController, noteId, application, repository, authenticationViewModel)
+            DetailsScreen(navController, noteId, viewModel, authenticationViewModel)
         }
         composable(NoteTakerScreens.CONNECTION_SCREEN.id) {
             ConnectionScreen(navController, authenticationViewModel)

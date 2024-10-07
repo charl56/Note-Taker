@@ -8,3 +8,4 @@ plugins {
     alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.dagger.hilt.android) apply false
 }
+

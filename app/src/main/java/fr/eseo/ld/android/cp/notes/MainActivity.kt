@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background),
                 ) {
-                    NoteTakerApp(application, repository)
+                    NoteTakerApp()
                 }
             }
         }

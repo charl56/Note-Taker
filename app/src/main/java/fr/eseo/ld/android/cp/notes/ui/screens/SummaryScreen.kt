@@ -28,13 +28,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import fr.eseo.ld.android.cp.notes.model.Note
 import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
-import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,21 +43,22 @@ import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModelFactory
 @Composable
 fun SummaryScreen(
     navController : NavController,
-    application: Application,
-    repository: FirestoreRepository,
+    viewModel: NoteTakerViewModel = viewModel(),
     authenticationViewModel: AuthenticationViewModel
 ) {
 
     val user by authenticationViewModel.user.observeAsState()
     var userConnected by remember{mutableStateOf(false)}
-
+    val context = LocalContext.current
     LaunchedEffect(user) {
         userConnected = user?.isAnonymous?.not() ?: false
     }
 
 
-    val viewModel = NoteTakerViewModelFactory(application, repository).create(NoteTakerViewModel::class.java)
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
+
+    val notes by viewModel.notes.collectAsState()
+
 
     LaunchedEffect(Unit) {
         viewModel.getNotes()
@@ -74,7 +76,6 @@ fun SummaryScreen(
         )
     }
 
-    val notes by viewModel.notes.collectAsState()
 
     Surface(
         modifier = Modifier
@@ -111,7 +112,7 @@ fun SummaryScreen(
                     if(userConnected) {
                         navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/NEW")
                     } else {
-                        val toast = Toast.makeText(application, "You need to be login", Toast.LENGTH_SHORT)
+                        val toast = Toast.makeText(context, "You need to be login", Toast.LENGTH_SHORT)
                         toast.show()
                     }
                 },
