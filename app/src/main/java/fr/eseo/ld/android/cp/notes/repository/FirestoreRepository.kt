@@ -11,12 +11,11 @@ class FirestoreRepository @Inject constructor(private val firestore: FirebaseFir
     private val notesCollection = firestore.collection("notes")
 
     fun addOrUpdateNote(note : Note) {
-        val documentId = if (note.id.isEmpty()) {
-            notesCollection.document().id
-        } else {
-            note.id
+        if (note.id.isEmpty()) {
+            note.id = notesCollection.document().id
         }
-        notesCollection.document(documentId).set(note)
+
+        notesCollection.document(note.id).set(note)
     }
 
     fun delete(noteId : String) {

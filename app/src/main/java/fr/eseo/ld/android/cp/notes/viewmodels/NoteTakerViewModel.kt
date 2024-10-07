@@ -37,12 +37,14 @@ class NoteTakerViewModel @Inject constructor(
         }
     }
 
+
     fun getNoteById(noteId: String) {
         _note.value = _notes.value.find { it.id == noteId }
     }
 
 
     fun deleteNote(noteId: String) {
+        println("NoteTakerViewModel.deleteNote $noteId")
         repository.delete(noteId)
         getNotes()
     }

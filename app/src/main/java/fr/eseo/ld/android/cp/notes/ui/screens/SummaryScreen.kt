@@ -54,7 +54,6 @@ fun SummaryScreen(
 
 
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
-
     val notes by viewModel.notes.collectAsState()
 
 
@@ -127,12 +126,16 @@ fun SummaryScreen(
                     notes = notes,
                     modifier = Modifier.padding(innerPadding),
                     onClick = {navController.navigate(NoteTakerScreens.DETAILS_SCREEN.id+"/${it}") },
-                    onLongClick = {it ->noteToDelete = notes.find{note -> note.id == it} }
+                    onLongClick = {note ->
+                        noteToDelete = note
+                    }
                 )
             }
         )
     }
 }
+
+
 
 @Composable
 fun ConfirmDeleteDialog(note: Note, onConfirm: () -> Unit, onDismiss: () -> Unit) {
@@ -161,13 +164,32 @@ fun ConfirmDeleteDialog(note: Note, onConfirm: () -> Unit, onDismiss: () -> Unit
 
 
 
+@Composable
+fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit, onLongClick : (Note) -> Unit)
+{
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2),
+        modifier = modifier.padding(8.dp).fillMaxHeight(1f),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(bottom = 40.dp)
+    ){
+        items(notes){
+                note -> SummaryItem(note, onClick = {onClick(it)}, onLongClick = {onLongClick(note)})
+        }
+    }
+}
+
+
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SummaryItem(note : Note,  onClick : (String) -> Unit, onLongClick : (String) -> Unit){
+private fun SummaryItem(note : Note,  onClick : (String) -> Unit, onLongClick : (Note) -> Unit){
     Card(
         modifier = Modifier.combinedClickable (
             onClick = {onClick(note.id)},
-            onLongClick = {onLongClick(note.id)}
+            onLongClick = {onLongClick(note)}
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
@@ -192,23 +214,5 @@ private fun SummaryItem(note : Note,  onClick : (String) -> Unit, onLongClick : 
                 .heightIn(max = 100.dp)
                 .verticalScroll(rememberScrollState())
         )
-    }
-}
-
-
-@Composable
-fun SummaryList(notes : List<Note>, modifier : Modifier = Modifier, onClick : (String) -> Unit, onLongClick : (String) -> Unit)
-{
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2),
-        modifier = modifier.padding(8.dp).fillMaxHeight(1f),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(bottom = 40.dp)
-    ){
-        items(notes){
-                note ->
-            SummaryItem(note, onClick = {onClick(it)}, onLongClick = {onLongClick(it)})
-        }
     }
 }

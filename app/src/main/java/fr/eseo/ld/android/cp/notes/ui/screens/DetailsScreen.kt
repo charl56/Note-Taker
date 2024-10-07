@@ -1,7 +1,6 @@
 package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
-import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -41,8 +40,6 @@ fun DetailsScreen(
     authenticationViewModel: AuthenticationViewModel
 ) {
 
-
-
     val existingNote by viewModel.note.collectAsState()
     var id by remember {mutableStateOf(existingNote?.id)}
     var title by remember { mutableStateOf(existingNote?.title ?: "") }
@@ -52,7 +49,6 @@ fun DetailsScreen(
     var editable by remember { mutableStateOf(true) }
 
     LaunchedEffect(noteId, existingNote) {
-        //userConnected = user?.isAnonymous?.not() ?: false
 
         if(noteId == "NEW") {
             id = null
@@ -72,9 +68,6 @@ fun DetailsScreen(
             }
         }
     }
-
-
-
 
     Surface(
         modifier = Modifier

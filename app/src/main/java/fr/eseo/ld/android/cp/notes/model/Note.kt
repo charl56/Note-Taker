@@ -3,7 +3,7 @@ package fr.eseo.ld.android.cp.notes.model
 import java.util.Date
 
 data class Note(
-    val id: String = "",
+    var id: String = "",
     val author: String = "",
     val creationDate: Date = Date(),
     val modificationDate: Date = Date(),
