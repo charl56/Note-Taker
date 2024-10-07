@@ -1,6 +1,5 @@
 package fr.eseo.ld.android.cp.notes.ui
 
-import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.ui.screens.SummaryScreen
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.ui.screens.ConnectionScreen

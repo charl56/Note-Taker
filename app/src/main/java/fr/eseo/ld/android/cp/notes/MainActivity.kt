@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
-import fr.eseo.ld.android.cp.notes.hiltmodules.FirebaseModule
 import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.ui.NoteTakerApp
 import fr.eseo.ld.android.cp.notes.ui.theme.NoteTakerTheme

@@ -2,7 +2,6 @@
 package fr.eseo.ld.android.cp.notes.ui.screens
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -32,7 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import fr.eseo.ld.android.cp.notes.model.Note
-import fr.eseo.ld.android.cp.notes.repository.FirestoreRepository
 import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 import fr.eseo.ld.android.cp.notes.viewmodels.NoteTakerViewModel
@@ -161,23 +159,6 @@ fun ConfirmDeleteDialog(note: Note, onConfirm: () -> Unit, onDismiss: () -> Unit
 
 }
 
-
-@Composable
-private fun SimpleComposeAppBar(modifier : Modifier = Modifier){
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ){
-        Text(
-            text = stringResource(id= R.string.app_name),
-            modifier = Modifier.padding(start=16.dp, top = 8.dp, bottom = 8.dp),
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.titleLarge,
-
-        )
-    }
-}
 
 
 @OptIn(ExperimentalFoundationApi::class)

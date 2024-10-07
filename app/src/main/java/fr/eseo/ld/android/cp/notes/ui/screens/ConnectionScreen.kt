@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import fr.eseo.ld.android.cp.notes.ui.navigation.NoteTakerScreens
 import fr.eseo.ld.android.cp.notes.viewmodels.AuthenticationViewModel
 
 @Composable
